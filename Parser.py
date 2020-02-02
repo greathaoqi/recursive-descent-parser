@@ -1,16 +1,45 @@
-# authored by Gang Tan; all rights reserved; do not distribute
+'''
 
-# introducing some constants; can also use the enum type if Python 3.4
-# is available
-INT, FLOAT, ID, SEMICOLON, ASSIGNMENTOP, EOI, INVALID = 1, 2, 3, 4, 5, 6, 7
+Name: Mrigank Doshy
+PSU ID: 911428894
+WebAccess ID: msd5399
+
+Course: CMPSC 461
+Term: Spring 2020
+Instructor: Gang Tan
+
+Recursive descent parser fora restricted form of SQL
+
+'''
+#-------------------------------------- TOKEN --------------------------------------
+
+INT, FLOAT, ID, COMMA, OPERATOR, EOI, INVALID, KEYWORD, QUERY, IDLIST, CONDLIST, COND, TERM = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
 
 def typeToString (tp):
-    if (tp == INT): return "Int"
-    elif (tp == FLOAT): return "Float"
-    elif (tp == ID): return "ID"
-    elif (tp == SEMICOLON): return "Semicolon"
-    elif (tp == ASSIGNMENTOP): return "AssignmentOp"
-    elif (tp == EOI): return "EOI"
+    if (tp == INT): 
+        return "Int"
+    elif (tp == FLOAT): 
+        return "Float"
+    elif (tp == ID): 
+        return "ID"
+    elif (tp == COMMA): 
+        return "Comma"
+    elif (tp == OPERATOR): 
+        return "Operator"
+    elif (tp == EOI): 
+        return "EOI"
+    elif (tp == KEYWORD): 
+        return "Keyword"
+    elif (tp == QUERY): 
+        return "Query"
+    elif (tp == IDLIST): 
+        return "IdList"
+    elif (tp == CONDLIST): 
+        return "CondList"
+    elif (tp == COND): 
+        return "Cond"
+    elif (tp == TERM): 
+        return "Term"
     return "Invalid"
 
 class Token:
@@ -28,16 +57,18 @@ class Token:
         return self.val
 
     def __repr__(self):
-        if (self.type in [INT, FLOAT, ID]): 
+        if (self.type in [INT, FLOAT, ID, KEYWORD, QUERY, IDLIST, CONDLIST, COND, TERM]): 
             return self.val
-        elif (self.type == SEMICOLON):
-            return ";"
-        elif (self.type == ASSIGNMENTOP):
+        elif (self.type == COMMA):
+            return ","
+        elif (self.type == OPERATOR):
             return ":="
         elif (self.type == EOI):
             return ""
         else:
             return "invalid"
+
+#------------------------------------ LEXER --------------------------------------
 
 LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 DIGITS = "0123456789"
@@ -55,7 +86,11 @@ class Lexer:
         while True:
             if self.ch.isalpha(): # is a letter
                 id = self.consumeChars(LETTERS+DIGITS)
-                return Token(ID, id)
+                if id == "SELECT" or id == "FROM" or id == "WHERE" or id == "AND":
+                    return Token(KEYWORD, id)
+                else:
+                    return Token(ID, id)
+
             elif self.ch.isdigit():
                 num = self.consumeChars(DIGITS)
                 if self.ch != ".":
@@ -65,17 +100,31 @@ class Lexer:
                 if self.ch.isdigit(): 
                     num += self.consumeChars(DIGITS)
                     return Token(FLOAT, num)
-                else: return Token(INVALID, num)
-            elif self.ch==' ': self.nextChar()
-            elif self.ch==';': 
+                else: 
+                    return Token(INVALID, num)
+
+            elif self.ch == ' ': 
                 self.nextChar()
-                return Token(SEMICOLON, "")
-            elif self.ch==':':
-                if self.checkChar("="):
-                    return Token(ASSIGNMENTOP, "")
-                else: return Token(INVALID, "")
-            elif self.ch=='$':
+
+            elif self.ch == ',': 
+                self.nextChar()
+                return Token(COMMA, "")
+
+            elif self.ch == '=':
+                self.nextChar()
+                return Token(OPERATOR, "=")
+
+            elif self.ch == '>':
+                self.nextChar()
+                return Token(OPERATOR, ">")
+
+            elif self.ch == '<':
+                self.nextChar()
+                return Token(OPERATOR, "<")
+
+            elif self.ch == '$':
                 return Token(EOI,"")
+
             else:
                 self.nextChar()
                 return Token(INVALID, self.ch)
@@ -99,6 +148,8 @@ class Lexer:
             return True
         else: return False
 
+#------------------------------------ PARSER --------------------------------------
+
 import sys
 
 class Parser:
@@ -107,49 +158,103 @@ class Parser:
         self.token = self.lexer.nextToken()
 
     def run(self):
-        self.statement()
+        self.query()
 
-    def statement(self):
-        print "<Statement>"
-        self.assignmentStmt()
-        while self.token.getTokenType() == SEMICOLON:
-            print "\t<Semicolon>;</Semicolon>"
-            self.token = self.lexer.nextToken()
-            self.assignmentStmt()
-        self.match(EOI)
-        print "</Statement>"
-
-    def assignmentStmt(self):
-        print "\t<Assignment>"
-        val = self.match(ID)
-        print "\t\t<Identifier>" + val + "</Identifier>"
-        self.match(ASSIGNMENTOP)
-        print "\t\t<AssignmentOp>:=</AssignmentOp>"
-        self.expression()
-        print "\t</Assignment>"
-
-    def expression(self):
-        if self.token.getTokenType() == ID:
-            print "\t\t<Identifier>" + self.token.getTokenValue() \
-                  + "</Identifier>"
-        elif self.token.getTokenType() == INT:
-            print "\t\t<Int>" + self.token.getTokenValue() + "</Int>"
-        elif self.token.getTokenType() == FLOAT:
-            print "\t\t<Float>" + self.token.getTokenValue() + "</Float>"
-        else:
-            print "Syntax error: expecting an ID, an int, or a float" \
-                  + "; saw:" \
-                  + typeToString(self.token.getTokenType())
-            sys.exit(1)
+    def next(self):
         self.token = self.lexer.nextToken()
 
+    def query(self):
+        print "<Query>"
 
-    def match (self, tp):
-        val = self.token.getTokenValue()
-        if (self.token.getTokenType() == tp):
-            self.token = self.lexer.nextToken()
-        else: self.error(tp)
-        return val
+        if (self.token.getTokenType() == KEYWORD) and (self.token.getTokenValue() == "SELECT"):
+            print "\t<Keyword>" + self.token.getTokenValue() + "</Keyword>" 
+            next(self)
+            idList(self)
+        else:
+            error(self, KEYWORD)
+
+        if (self.token.getTokenType() == KEYWORD) and (self.token.getTokenValue() == "FROM"):
+            print "\t<Keyword>" + self.token.getTokenValue() + "</Keyword>" 
+            next(self)
+            idList(self)
+        else:
+            error(self, KEYWORD)
+
+        if (self.token.getTokenType() == KEYWORD) and (self.token.getTokenValue() == "WHERE"):
+            print "\t<Keyword>" + self.token.getTokenValue() + "</Keyword>" 
+            next(self)
+            condList(self)
+        
+        if self.token.getTokenType() == EOI:
+            print "</Query>"
+
+        if self.token.getTokenType() == INVALID:
+            error(self, self.token.getTokenType())
+            next(self)
+
+
+    def idList(self):
+        print "\t<IdList>"
+        if self.token.getTokenType() == ID:
+            print "\t\t<Id>" + self.token.getTokenValue() + "</Id>"
+            next(self)
+        while self.token.getTokenType() == COMMA:
+            print "\t\t<Comma>" + "," + "</Comma>"
+            next(self)
+            if self.token.getTokenType() == ID:
+                print "\t\t<Id>" + self.token.getTokenValue() + "</Id>"
+                next(self)
+            else:
+                error(self, ID)
+        print "\t</IdList>"
+
+    def condList(self):
+        print "\t<CondList>"
+        if self.token.getTokenType() == ID:
+            cond(self)
+        else:
+            error(self, self.token.getTokenType())
+
+        while ((self.token.getTokenType() == KEYWORD) and (self.token.getTokenValue() == "AND")):
+            print "\t<Keyword>" + self.token.getTokenValue() + "</Keyword>" 
+            next(self);
+            if self.token.getTokenType() == ID:
+                cond(self)
+            else:
+                error(self, CONDLIST)
+        print "\t</CondList>"
+        
+
+    def cond(self):
+        print "\t\t<Cond>"
+        print "\t\t\t<Id>" + self.token.getTokenValue() + "</Id>" 
+        next(self)
+        if self.token.getTokenType() == OPERATOR:
+            print "\t\t\t<Operator>" + self.token.getTokenValue() + "</Operator>" 
+            next(self)
+            term(self)
+        else:
+            error(self, COND)
+        print "\t\t</Cond>"
+
+    def term(self):
+        print "\t\t\t<Term>"
+        if self.token.getTokenType() == ID:
+            print "\t\t\t<Id>" + self.token.getTokenValue() + "</Id>"
+            next(self)
+
+        elif self.token.getTokenType() == INT:
+            print "\t\t\t<Int>" + self.token.getTokenValue() + "</Int>"
+            next(self)
+
+        elif self.token.getTokenType() == FLOAT:
+            print "\t\t\t<Float>" + self.token.getTokenValue() + "</Float>"
+            next(self)
+
+        else:
+            error(self, TERM)
+        print "\t\t\t</Term>"
+
 
     def error(self, tp):
         print "Syntax error: expecting: " + typeToString(tp) \
@@ -157,38 +262,5 @@ class Parser:
         sys.exit(1)
 
 
-print "Testing the lexer: test 1"
-lex = Lexer ("x := 1 $")
-tk = lex.nextToken()
-while (tk.getTokenType() != EOI):
-    print tk
-    tk = lex.nextToken()
-print
-
-print "Testing the lexer: test 2"
-lex = Lexer ("x := 1; y := 2.3; z := x $")
-tk = lex.nextToken()
-while (tk.getTokenType() != EOI):
-    print tk
-    tk = lex.nextToken()
-print
-
-print "Testing the lexer: test 3"
-lex = Lexer ("x := 1; y : 2; z := x $")
-tk = lex.nextToken()
-while (tk.getTokenType() != EOI):
-    print tk
-    tk = lex.nextToken()
-print
-
-print "Testing the parser: test 1"
-parser = Parser ("x := 1");
-parser.run();
-
-print "Testing the parser: test 2"
-parser = Parser ("x := 1; y := 2.3; z := x");
-parser.run();
-
-print "Testing the parser: test 3"
-parser = Parser ("x := 1; y ; 2; z := x");
-parser.run();
+parser = Parser ("SELECT C1,C2 FROM T1 WHERE C1=5.23")
+parser.run()
