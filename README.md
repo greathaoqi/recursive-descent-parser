@@ -1,6 +1,6 @@
 # Recursive-Descent-Parser
 
-## Note: Current or future CMPSC 461 students are prohibited from copying or referring to my code. You are responsible for any act of plagiarism and its consequences. This repository is for anyone interested in viewing my work. 
+### Note: Current or future CMPSC 461 students are prohibited from copying or referring to my code. You are responsible for any act of plagiarism and its consequences. This repository is for anyone interested in viewing my work. 
 
 This is a Recursive Descent Parser for a restricted form of SQL
 
