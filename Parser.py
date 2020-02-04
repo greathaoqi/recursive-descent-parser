@@ -261,6 +261,12 @@ class Parser:
               + "; saw: " + typeToString(self.token.getTokenType())
         sys.exit(1)
 
-
+#-------- Test 1 -----------
 parser = Parser ("SELECT C1,C2 FROM T1 WHERE C1=5.23")
 parser.run()
+#-------- Test 2 -----------
+#parser = Parser ("SELECT C1,C2 FROM T1 WHERE C1<5.23 AND C2 = 5")
+#parser.run()
+#-------- Test 3 -----------
+#parser = Parser (" ")
+#parser.run()
