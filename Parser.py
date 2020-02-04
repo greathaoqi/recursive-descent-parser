@@ -168,91 +168,91 @@ class Parser:
 
         if (self.token.getTokenType() == KEYWORD) and (self.token.getTokenValue() == "SELECT"):
             print "\t<Keyword>" + self.token.getTokenValue() + "</Keyword>" 
-            next(self)
-            idList(self)
+            self.next()
+            self.idList()
         else:
-            error(self, KEYWORD)
+            self.error(KEYWORD)
 
         if (self.token.getTokenType() == KEYWORD) and (self.token.getTokenValue() == "FROM"):
             print "\t<Keyword>" + self.token.getTokenValue() + "</Keyword>" 
-            next(self)
-            idList(self)
+            self.next()
+            self.idList()
         else:
-            error(self, KEYWORD)
+            self.error(KEYWORD)
 
         if (self.token.getTokenType() == KEYWORD) and (self.token.getTokenValue() == "WHERE"):
             print "\t<Keyword>" + self.token.getTokenValue() + "</Keyword>" 
-            next(self)
-            condList(self)
+            self.next()
+            self.condList()
         
         if self.token.getTokenType() == EOI:
             print "</Query>"
 
         if self.token.getTokenType() == INVALID:
-            error(self, self.token.getTokenType())
-            next(self)
+            self.error(self.token.getTokenType())
+            self.next()
 
 
     def idList(self):
         print "\t<IdList>"
         if self.token.getTokenType() == ID:
             print "\t\t<Id>" + self.token.getTokenValue() + "</Id>"
-            next(self)
+            self.next()
         while self.token.getTokenType() == COMMA:
             print "\t\t<Comma>" + "," + "</Comma>"
-            next(self)
+            self.next()
             if self.token.getTokenType() == ID:
                 print "\t\t<Id>" + self.token.getTokenValue() + "</Id>"
-                next(self)
+                self.next()
             else:
-                error(self, ID)
+                self.error(ID)
         print "\t</IdList>"
 
     def condList(self):
         print "\t<CondList>"
         if self.token.getTokenType() == ID:
-            cond(self)
+            self.cond()
         else:
-            error(self, self.token.getTokenType())
+            self.error(self.token.getTokenType())
 
         while ((self.token.getTokenType() == KEYWORD) and (self.token.getTokenValue() == "AND")):
             print "\t<Keyword>" + self.token.getTokenValue() + "</Keyword>" 
-            next(self);
+            self.next();
             if self.token.getTokenType() == ID:
-                cond(self)
+                self.cond()
             else:
-                error(self, CONDLIST)
+                self.error(CONDLIST)
         print "\t</CondList>"
         
 
     def cond(self):
         print "\t\t<Cond>"
         print "\t\t\t<Id>" + self.token.getTokenValue() + "</Id>" 
-        next(self)
+        self.next()
         if self.token.getTokenType() == OPERATOR:
             print "\t\t\t<Operator>" + self.token.getTokenValue() + "</Operator>" 
-            next(self)
-            term(self)
+            self.next()
+            self.term()
         else:
-            error(self, COND)
+            self.error(COND)
         print "\t\t</Cond>"
 
     def term(self):
         print "\t\t\t<Term>"
         if self.token.getTokenType() == ID:
             print "\t\t\t<Id>" + self.token.getTokenValue() + "</Id>"
-            next(self)
+            self.next()
 
         elif self.token.getTokenType() == INT:
             print "\t\t\t<Int>" + self.token.getTokenValue() + "</Int>"
-            next(self)
+            self.next()
 
         elif self.token.getTokenType() == FLOAT:
             print "\t\t\t<Float>" + self.token.getTokenValue() + "</Float>"
-            next(self)
+            self.next()
 
         else:
-            error(self, TERM)
+            self.error(TERM)
         print "\t\t\t</Term>"
 
 
