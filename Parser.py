@@ -248,7 +248,7 @@ class Parser:
             self.next()
 
         elif self.token.getTokenType() == FLOAT:
-            print "\t\t\t<Float>" + self.token.getTokenValue() + "</Float>"
+            print "\t\t\t\t<Float>" + self.token.getTokenValue() + "</Float>"
             self.next()
 
         else:
