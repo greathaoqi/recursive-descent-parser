@@ -61,6 +61,13 @@ class Token:
             return self.val
         elif (self.type == COMMA):
             return ","
+        elif (self.type == OPERATOR):
+            if (self.val == "="):
+                return "="
+            if (self.val == ">"):
+                return ">"
+            if (self.val == "<"):
+                return "<"
         elif (self.type == EOI):
             return ""
         else:
