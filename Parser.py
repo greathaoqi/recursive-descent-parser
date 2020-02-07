@@ -61,8 +61,6 @@ class Token:
             return self.val
         elif (self.type == COMMA):
             return ","
-        elif (self.type == OPERATOR):
-            return ":="
         elif (self.type == EOI):
             return ""
         else:
@@ -89,7 +87,7 @@ class Lexer:
                 if id == "SELECT" or id == "FROM" or id == "WHERE" or id == "AND":
                     return Token(KEYWORD, id)
                 else:
-                    return Token(ID, id)
+                    return Token(ID, id) 
 
             elif self.ch.isdigit():
                 num = self.consumeChars(DIGITS)
@@ -260,6 +258,8 @@ class Parser:
         print "Syntax error: expecting: " + typeToString(tp) \
               + "; saw: " + typeToString(self.token.getTokenType())
         sys.exit(1)
+
+#------------------------------------ MAIN ----------------------------------------
 
 #-------- Test 1 -----------
 parser = Parser ("SELECT C1,C2 FROM T1 WHERE C1=5.23")
